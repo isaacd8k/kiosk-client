@@ -1,5 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import AnnouncementBoards from "./../../routes/announcementboards";
+
 
 function App() {
   return (
@@ -10,7 +12,7 @@ function App() {
       {/* Here is the main routing mechanism */}
       <Switch>          
         <Route path="/announcement-boards">
-          <div>Render announcement boards component!</div>
+          <AnnouncementBoards />
         </Route>
 
         <Route path="/menu">

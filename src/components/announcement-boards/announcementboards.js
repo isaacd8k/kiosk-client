@@ -1,5 +1,6 @@
 import React from "react";
 import styles from "./announcementboards.module.scss";
+import { motion } from "framer-motion";
 
 // subcomponents
 import Slide from "./components/slide";
@@ -7,6 +8,16 @@ import Slide from "./components/slide";
 export default function AnnouncementBoards() {
   // slide duration (later pulled in from config)
   const slideDuration = 30;
+
+  // animation states (later all app anims to be abstracted into separate file)
+  const animationStates = {
+    "inactive": {
+      
+    },
+    "active": {
+
+    }
+  };
 
   // set up timer & cleanup fn
 

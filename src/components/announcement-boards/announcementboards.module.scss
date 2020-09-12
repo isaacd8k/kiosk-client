@@ -13,5 +13,15 @@
   padding: 2em;
   // center the enclosed block
   display: grid;
-  place-items: center;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+}
+
+.singleslide_container {
+  // this makes sure the animated element doesn't change layout when 
+  // animating in/out (the DOM can have more than one component
+  // rendered while animating) - all containers sit in the same position
+  // on the grid
+  grid-column: 1 / 1;
+  grid-row: 1 / 1;
 }

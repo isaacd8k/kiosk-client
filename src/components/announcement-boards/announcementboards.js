@@ -33,41 +33,40 @@ const animationStates = {
   }
 };
 
+
+
+function useInterval(callback, delay) {
+  const savedCallback = useRef();
+
+  useEffect(() => {
+    savedCallback.current = callback;
+  });
+
+  useEffect(() => {
+    function tick() {
+      console.log('tick!');
+      savedCallback.current();
+    }
+
+    if (delay !== null) {
+      let id = setInterval(tick, delay);
+      return () => clearInterval(id);
+    }
+  }, [delay]);
+}
+
+
+
 export default function AnnouncementBoards() {
   const [activeSlide, setActiveSlide] = useState(0);
   const [slideTimerCount, setSlideTimerCount] = useState(5);
+  const [delay, setDelay] = useState(1000);
+  const [isRunning, setIsRunning] = useState(true);
   
-  const tickCallback = useRef();
-
-
-  // generic useEffect hook 
-  useEffect(()=> {
-    console.log('hook called on every re-render');
-  });
-
-
-  // set default callback behavior only upon first render
-  useEffect(()=> {
-    tickCallback.current = () => setSlideTimerCount((prev) => prev-1);
-  }, []);
-  
-
-  useEffect(() => {
-    console.log(`ran useEffect(), watching slideTimerCount: ${slideTimerCount}`);
-
-    // check if we reached 0 yet
-    if (slideTimerCount > 0) {
-      const id = setTimeout(() => {
-        tickCallback.current();
-      }, 1000);
-
-      return () => {
-        clearTimeout(id)
-      }
-    }
-    
-    return;
-  }, [slideTimerCount])
+  // set up the interval with custom hook
+  useInterval(() => {
+    setSlideTimerCount((current) => current - 1);
+  }, isRunning ? delay : null);
 
 
   // react when counter reaches zero, move to next page and reset
@@ -80,12 +79,11 @@ export default function AnnouncementBoards() {
 
 
   const playSlides = () => {
-    setSlideTimerCount((p)=>p-1)
-    tickCallback.current = () => setSlideTimerCount((prev)=>prev-1);
+    setIsRunning(true);
   }
 
   const pauseSlides = () => {
-    tickCallback.current = () => null;
+    setIsRunning(false);
   }
 
   // paginate accepts the direction (sign) and size of jump in

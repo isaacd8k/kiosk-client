@@ -1,5 +1,5 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import styles from "./announcementboards.module.scss";
 import { motion, AnimatePresence } from "framer-motion";
 import { wrap } from "@popmotion/popcorn";
@@ -35,6 +35,58 @@ const animationStates = {
 
 export default function AnnouncementBoards() {
   const [activeSlide, setActiveSlide] = useState(0);
+  const [slideTimerCount, setSlideTimerCount] = useState(5);
+  
+  const tickCallback = useRef();
+
+
+  // generic useEffect hook 
+  useEffect(()=> {
+    console.log('hook called on every re-render');
+  });
+
+
+  // set default callback behavior only upon first render
+  useEffect(()=> {
+    tickCallback.current = () => setSlideTimerCount((prev) => prev-1);
+  }, []);
+  
+
+  useEffect(() => {
+    console.log(`ran useEffect(), watching slideTimerCount: ${slideTimerCount}`);
+
+    // check if we reached 0 yet
+    if (slideTimerCount > 0) {
+      const id = setTimeout(() => {
+        tickCallback.current();
+      }, 1000);
+
+      return () => {
+        clearTimeout(id)
+      }
+    }
+    
+    return;
+  }, [slideTimerCount])
+
+
+  // react when counter reaches zero, move to next page and reset
+  useEffect(() => {
+    if (slideTimerCount === 0) {
+      paginate(1);
+      setSlideTimerCount(5);
+    }
+  }, [slideTimerCount]);
+
+
+  const playSlides = () => {
+    setSlideTimerCount((p)=>p-1)
+    tickCallback.current = () => setSlideTimerCount((prev)=>prev-1);
+  }
+
+  const pauseSlides = () => {
+    tickCallback.current = () => null;
+  }
 
   // paginate accepts the direction (sign) and size of jump in
   // active slide number and moves delta steps
@@ -63,6 +115,10 @@ export default function AnnouncementBoards() {
 
       <button onClick={()=> { paginate(-1) }}>Previous slide</button>
       <button onClick={()=> { paginate(1) } }>Next slide</button>
+      <button onClick={()=> pauseSlides() }>Pause slides</button>
+      <button onClick={()=> playSlides() }>Play slides</button>
+
+      <div>Countdown: {slideTimerCount}</div>
     </>
   )
 }

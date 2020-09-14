@@ -1,8 +1,11 @@
 import React from "react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import styles from "./announcementboards.module.scss";
 import { motion, AnimatePresence } from "framer-motion";
 import { wrap } from "@popmotion/popcorn";
+
+// custom hooks
+import { useInterval } from "./hooks";
 
 // subcomponents
 import Slide from "./components/slide";
@@ -35,35 +38,19 @@ const animationStates = {
 
 
 
-function useInterval(callback, delay) {
-  const savedCallback = useRef();
-
-  useEffect(() => {
-    savedCallback.current = callback;
-  });
-
-  useEffect(() => {
-    function tick() {
-      console.log('tick!');
-      savedCallback.current();
-    }
-
-    if (delay !== null) {
-      let id = setInterval(tick, delay);
-      return () => clearInterval(id);
-    }
-  }, [delay]);
-}
-
-
 
 export default function AnnouncementBoards() {
   const [activeSlide, setActiveSlide] = useState(0);
-  const [slideTimerCount, setSlideTimerCount] = useState(5);
-  const [delay, setDelay] = useState(1000);
+  const [slideTimerCount, setSlideTimerCount] = useState(100);
+  const [delay, setDelay] = useState(null);
   const [isRunning, setIsRunning] = useState(true);
   
-  // set up the interval with custom hook
+  
+  // set up default tick delay on initial render
+  useEffect(() => setDelay(100), []);
+
+
+  // set up the tick function at configured delay (countdown) - null pauses the countdown
   useInterval(() => {
     setSlideTimerCount((current) => current - 1);
   }, isRunning ? delay : null);
@@ -73,10 +60,18 @@ export default function AnnouncementBoards() {
   useEffect(() => {
     if (slideTimerCount === 0) {
       paginate(1);
-      setSlideTimerCount(5);
+      setSlideTimerCount(100);
     }
   }, [slideTimerCount]);
 
+
+  // moves the slider `delta` slides forward
+  const paginate = (delta) => {    
+    setActiveSlide((currentSlide) => (
+      // wrap slide increment/decrement around array size
+      wrap(0, data.length, currentSlide + delta)
+    ));
+  };
 
   const playSlides = () => {
     setIsRunning(true);
@@ -86,13 +81,7 @@ export default function AnnouncementBoards() {
     setIsRunning(false);
   }
 
-  // paginate accepts the direction (sign) and size of jump in
-  // active slide number and moves delta steps
-  const paginate = (delta) => {
-    // wrap slide increment/decrement around array size
-    const newSlideIndex = wrap(0, data.length, activeSlide + delta);
-    setActiveSlide(newSlideIndex);
-  }
+  
 
   return (
     <>

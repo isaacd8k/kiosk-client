@@ -1,7 +1,7 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import styles from "./announcementboards.module.scss";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue } from "framer-motion";
 import { wrap } from "@popmotion/popcorn";
 
 // custom hooks
@@ -44,11 +44,11 @@ export default function AnnouncementBoards() {
   const [slideTimerCount, setSlideTimerCount] = useState(100);
   const [delay, setDelay] = useState(null);
   const [isRunning, setIsRunning] = useState(true);
-  
-  
+
+
   // set up default tick delay on initial render
   useEffect(() => setDelay(100), []);
-
+  
 
   // set up the tick function at configured delay (countdown) - null pauses the countdown
   useInterval(() => {
@@ -81,6 +81,17 @@ export default function AnnouncementBoards() {
     setIsRunning(false);
   }
 
+  const variants = {
+    blankStroke: {
+      pathLength: 1,
+      pathOffset: 0
+    },
+    fillStroke: (duration) => ({
+      pathLength: 1,
+      pathOffset: 1,
+      transition: { duration, ease:"linear" }
+    })
+  }
   
 
   return (
@@ -106,6 +117,38 @@ export default function AnnouncementBoards() {
       <button onClick={()=> playSlides() }>Play slides</button>
 
       <div>Countdown: {slideTimerCount}</div>
+
+
+
+      <div className={styles.svgContainer}>
+        <motion.svg
+          viewBox="0 0 850 650" 
+          className={styles.svg} 
+          preserveAspectRatio="none"
+        >
+
+          <path
+            d="M20 20 H788 V588 H20 z"
+            fill="transparent"
+            stroke="green"
+            strokeWidth="6"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
+          <motion.path
+            d="M20 20 H788 V588 H20 z"
+            fill="transparent"
+            stroke="#f3f3f3"
+            strokeWidth="6"
+            strokeLinejoin="round"
+            strokeLinecap="square"
+            variants={variants}
+            initial="blankStroke"
+            animate="fillStroke"
+            custom={25}
+          />
+        </motion.svg>
+      </div>
     </>
   )
 }

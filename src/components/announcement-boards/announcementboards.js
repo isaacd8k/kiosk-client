@@ -1,7 +1,7 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import styles from "./announcementboards.module.scss";
-import { motion, AnimatePresence, useMotionValue } from "framer-motion";
+import { motion, AnimatePresence, useAnimation } from "framer-motion";
 import { wrap } from "@popmotion/popcorn";
 
 // custom hooks
@@ -44,11 +44,16 @@ export default function AnnouncementBoards() {
   const [slideTimerCount, setSlideTimerCount] = useState(100);
   const [delay, setDelay] = useState(null);
   const [isRunning, setIsRunning] = useState(true);
+  
+  const [slideDelay, setSlideDelay] = useState(30);
+
+  // animation orchestration
+  const controls = useAnimation();
 
 
   // set up default tick delay on initial render
   useEffect(() => setDelay(100), []);
-  
+
 
   // set up the tick function at configured delay (countdown) - null pauses the countdown
   useInterval(() => {
@@ -74,10 +79,12 @@ export default function AnnouncementBoards() {
   };
 
   const playSlides = () => {
+    controls.start("fillStroke");
     setIsRunning(true);
   }
 
   const pauseSlides = () => {
+    controls.stop();
     setIsRunning(false);
   }
 
@@ -144,8 +151,8 @@ export default function AnnouncementBoards() {
             strokeLinecap="square"
             variants={variants}
             initial="blankStroke"
-            animate="fillStroke"
-            custom={25}
+            animate={controls}
+            custom={slideDelay}
           />
         </motion.svg>
       </div>

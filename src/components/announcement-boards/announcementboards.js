@@ -1,7 +1,7 @@
 import React from "react";
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect } from "react";
 import styles from "./announcementboards.module.scss";
-import { motion, AnimatePresence, useAnimation } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { wrap } from "@popmotion/popcorn";
 
 // custom hooks

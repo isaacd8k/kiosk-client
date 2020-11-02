@@ -42,6 +42,13 @@ const animationStates = {
 export default function AnnouncementBoards() {
   const [slides, setSlides] = useState(data);
   const [activeSlideIndex, setActiveSlideIndex] = useState(undefined);
+
+
+  // COUNTDOWN STATE
+  const [slideDuration, setSlideDuration] = useState(10);
+  const [isSlidePaused, setIsSlidePaused] = useState(false);
+  const [timerCbArray, settimerCbArray] = useState([]);
+  
   
 
   /*
@@ -53,9 +60,48 @@ export default function AnnouncementBoards() {
     -- comparators below
   */
 
+  // on mount, start slides by showing the first slide
   useEffect(() => {
+    // temporary function
     setActiveSlideIndex(0);
+
+    /* Really this method should be replaced with startSlides(0)
+     or similar to bootstrap the countdown behavior upon mount rather
+     than just manually setting a slide */
+
+     // startTimedBoards(0)
   }, [slides])
+
+
+  // COUNTDOWN
+  useEffect(() => {
+    // custom hook: store time remaining in a hook
+    // const timeStarted = useRef();
+    // const timeRemaining = useRef();
+    let timeStarted, timeRemaining;
+
+    if (isSlidePaused) {
+      console.log('slide has been paused, exiting');
+
+      // pause the countdown
+      return;
+    }
+
+    // setup our timer for the slideDuration
+    console.log('Set timeout! For ', slideDuration);
+    console.log('Saved the start time: ', Date.now());
+
+    // cleanup function
+    return () => {
+      // cancel timers, etc
+      console.log('Cleanup function! Clearing timeout!');
+
+      // we somehow have to save to a ref the timeRemaining
+      // and then when the effect reruns, start the timer
+      // with the time remaining not from the beginning
+    }
+  }, [slideDuration, isSlidePaused, timerCbArray]);
+
 
   
   // moves the slider `delta` slides forward
@@ -89,6 +135,9 @@ export default function AnnouncementBoards() {
 
       <button onClick={()=> { paginate(-1) }}>Previous slide</button>
       <button onClick={()=> { paginate(1) } }>Next slide</button>
+      <button onClick={()=> { setSlideDuration(Math.floor(Math.random() * 10)) } }>Randomize slide duration</button>
+      <button onClick={()=> { setIsSlidePaused(true); }}>Pause slide</button>
+      <button onClick={()=> { setIsSlidePaused(false); }}>Resume</button>
       
 
 

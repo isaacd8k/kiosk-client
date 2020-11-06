@@ -1,1 +1,1 @@
-export { default } from "../../components/announcement-boards/announcementboards";
+export { default } from "../../components/announcement-boards/newtimer";

@@ -7,62 +7,86 @@ function useInterval(callback, delay) {
   // Remember the latest callback.
   useEffect(() => {
     savedCallback.current = callback;
-    console.log('callback useEffect() ran!');
   }, [callback]);
 
   // Set up the interval.
-  useEffect(() => {
-    console.log('interval useEffect() ran!');
+  useEffect(() => {    
     function tick() {
       savedCallback.current();
     }
-    if (delay !== null) {
+    if (delay !== null) {      
       let id = setInterval(tick, delay);
-      return () => clearInterval(id);
+      console.log(`useInterval hook: creating the interval! ${id}`);
+      return () => {
+        console.log(`useInterval hook: clearing the interval! ${id}`);
+        clearInterval(id);
+      }
     }
   }, [delay]);
 }
 
+// set conditions for delay to check for endless timer loops
+// (e.g. the timeRemaining has already passed 0 and thus will never
+// trigger the === 0 statement; empty delays or 0 delays or negative delays or invalid delays)
+// is it really necessary to allow for live updating of timer... maybe not. Maybe whenever it changes
+// it should automatically reset??? 
 
+function useEnhancedTimeout(callback, delay) {
+  console.log(`Called useEnhancedTimeout hook; delay: ${delay} `);
 
-export default function NewTimer() {
   // New timer implementation details
-  const [timerDuration, setTimerDuration] = useState(15);
+  const [timerDuration, setTimerDuration] = useState(delay);
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(null);
-  const [isPaused, setIsPaused] = useState(false);
+  const [isPaused, setIsPaused] = useState(true);
 
-  const [inputVal, setInputVal] = useState(null);
+  // store latest callback in a Ref
+  const savedCallback = useRef();
 
 
+  // Always save updates to the callback
+  useEffect(() => {
+    savedCallback.current = callback;
+  }, [callback]);
+
+
+  // Set up the timeout function
   // timer-interval action
   useInterval(() => {
     setTimeElapsed(timeElapsed + 1);
   }, isPaused ? null : 1000);
 
+
   // timer-interval side effects
   useEffect(() => {
-    setTimeRemaining(timerDuration - timeElapsed);
-  }, [timerDuration, timeElapsed]);
+    setTimeRemaining(delay - timeElapsed);
+  }, [timeElapsed, delay]);
+
 
   // on timer complete actions
   useEffect(() => {
     if (timeRemaining === 0) {
       setIsPaused(true);
+      // other 'complete' actions
+
+      // call the callback
+      savedCallback.current()
     };
   }, [timeRemaining]);
 
 
 
-
+  // TIMER ACTIONS
   // pause action
   function pauseTimer() {
     setIsPaused(true);
+    return getTimeRemaining();
   }
 
   // resume action
   function resumeTimer() {
     setIsPaused(false);
+    return getTimeRemaining();
   }
 
   // reset timer to default time
@@ -71,17 +95,40 @@ export default function NewTimer() {
     setIsPaused(true);
     // reset elapsed time back to 0
     setTimeElapsed(0);
+
+    return getTimeRemaining();
   }
+
+  function getTimeRemaining() {
+    return 'Time remaining here';    
+  }
+
+  // returns remaining time or somehow communicates it to the component
+  return {
+    pause: pauseTimer,
+    reset: resetTimer,
+    start: resumeTimer,
+    timeRemaining: getTimeRemaining
+  }
+}
+
+
+
+export default function NewTimer() {
+  const [timerDuration, setTimerDuration] = useState(5);
+
+
+  const { pause: pauseTimer, 
+          reset: resetTimer, 
+          start: resumeTimer, 
+          timeRemaining: getTimeRemaining } = useEnhancedTimeout(() => { console.log('Timer fired!') }, timerDuration);
 
 
   return (
     <div>
 
       <div>Timer duration: { timerDuration }</div>
-      <div>Timer elapsed time: { timeElapsed }</div>
-      <div>Timer remaining time: { timeRemaining }</div>
-      <div>Random input val: { inputVal }</div>
-      <input type="text" val={inputVal} onChange={(e) => { setInputVal(e.target.value) }}></input>
+      <input type="number" value={ timerDuration } onChange={(e) => { setTimerDuration(e.target.value) }}></input>
 
 
       <button onClick={() => { pauseTimer() }}>PAUSE</button>

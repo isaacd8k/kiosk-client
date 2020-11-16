@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { wrap } from "@popmotion/popcorn";
 
 // custom hooks
-// import { useInterval } from "./hooks";
+import { useTimer } from "./hooks";
 
 // subcomponents
 import Slide from "./components/slide";
@@ -74,6 +74,18 @@ export default function AnnouncementBoards() {
       wrap(0, slides.length, currentSlide + delta)
     ));
   };
+
+
+  // here's the new timer hook!
+  const { reset: resetTimer } = useTimer({
+    delay: 10,
+    onComplete: ()=>{
+      paginate(1);
+      resetTimer();
+    },
+    isPaused: slidesArePaused,
+    tickUpdater: t => console.log(t)
+  });
 
 
 

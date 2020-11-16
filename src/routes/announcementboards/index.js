@@ -1,1 +1,1 @@
-export { default } from "../../components/announcement-boards/newtimer";
+export { default } from "../../components/announcement-boards/announcementboards.js";

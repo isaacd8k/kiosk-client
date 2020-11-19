@@ -43,6 +43,7 @@ export default function AnnouncementBoards() {
   const [slides, setSlides] = useState(data);
   const [slidesArePaused, setSlidesArePaused] = useState(true);
   const [activeSlideIndex, setActiveSlideIndex] = useState(undefined);
+  const [timeRemaining, setTimeRemaining] = useState(null);
 
   /*
     ***** bug watch *****
@@ -55,18 +56,27 @@ export default function AnnouncementBoards() {
 
   // on mount, start slides by showing the first slide
   useEffect(() => {
-    // temporary function
+    // initiate first slide
     setActiveSlideIndex(0);
 
-    /* Really this method should be replaced with startSlides(0)
-     or similar to bootstrap the countdown behavior upon mount rather
-     than just manually setting a slide */
-
-     // startTimedBoards(0)
+    // 'play' the slides!
+    setSlidesArePaused(false);
   }, [slides])
 
 
+  // setup custom hook timer
+  const { reset: resetTimer } = useTimer({
+    delay: 10,
+    onComplete: ()=>{
+      paginate(1);
+      resetTimer();
+    },
+    isPaused: slidesArePaused,
+    tickUpdater: t => setTimeRemaining(t)
+  });
   
+
+  /* UTILITY FUNCTIONS */
   // moves the slider `delta` slides forward
   const paginate = (delta) => {    
     setActiveSlideIndex((currentSlide) => (
@@ -76,17 +86,7 @@ export default function AnnouncementBoards() {
   };
 
 
-  // here's the new timer hook!
-  const { reset: resetTimer } = useTimer({
-    delay: 10,
-    onComplete: ()=>{
-      paginate(1);
-      resetTimer();
-    },
-    isPaused: slidesArePaused,
-    tickUpdater: t => console.log(t)
-  });
-
+  
 
 
   return (
@@ -112,7 +112,7 @@ export default function AnnouncementBoards() {
       <button onClick={()=> { paginate(1) } }>Next slide</button>
       <button onClick={()=> { setSlidesArePaused(true); }}>Pause slide</button>
       <button onClick={()=> { setSlidesArePaused(false); }}>Start/Resume</button>
-      
+      <span>{timeRemaining}</span>
 
 
 

@@ -1,7 +1,7 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import styles from "./announcementboards.module.scss";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useAnimation } from "framer-motion";
 import { wrap } from "@popmotion/popcorn";
 
 // custom hooks
@@ -42,8 +42,11 @@ const animationStates = {
 export default function AnnouncementBoards() {
   const [slides, setSlides] = useState(data);
   const [slidesArePaused, setSlidesArePaused] = useState(true);
+  const [currentSlideComplete, setCurrentSlideComplete] = useState(false);
   const [activeSlideIndex, setActiveSlideIndex] = useState(undefined);
   const [timeRemaining, setTimeRemaining] = useState(null);
+
+  const timerAnimationControls = useAnimation();
 
   /*
     ***** bug watch *****
@@ -68,8 +71,10 @@ export default function AnnouncementBoards() {
   const { reset: resetTimer } = useTimer({
     delay: 10,
     onComplete: ()=>{
+      setSlidesArePaused(true);
+      setCurrentSlideComplete(true);
+
       paginate(1);
-      resetTimer();
     },
     isPaused: slidesArePaused,
     tickUpdater: t => setTimeRemaining(t)
@@ -83,10 +88,67 @@ export default function AnnouncementBoards() {
       // wrap slide increment/decrement around array size
       wrap(0, slides.length, currentSlide + delta)
     ));
+
+    // sequence animation
+    // slide fade animation
+    // THEN reset our timer state (i.e. isComplete & isPause)
+    resetTimer();
+    setSlidesArePaused(false);
   };
 
 
-  
+  // start the animation
+
+  // SYNC THE ANIMATION WITH THE TIMER
+  // ** play/pause ** //
+  useEffect(() => {
+    if(slidesArePaused) {
+      // PAUSE
+      // pause the animation
+      timerAnimationControls.stop();
+    }
+
+    else if (currentSlideComplete) {
+      // HAS BEEN UNPAUSED AFTER COMPLETE
+      
+
+      // bug problem! out of sync with timer!! because this func is async
+      // maybe defer timer reset to "start" here instead of up there
+      timerAnimationControls.start("reset").then(() => {
+        timerAnimationControls.start("start");
+      });
+    }
+    
+    else {
+      // HAS BEEN UNPAUSED
+      timerAnimationControls.start("start");
+    }
+
+    // IF unpausing from a currentSlideComplete pause,
+    // sequence an animation to:
+    // FIRST xxx.start("reset");
+    // AWAIT THEN xxx.start("start");
+
+    console.log('CURRENTSLIDECOMPLETE: ', currentSlideComplete);
+
+  }, [slidesArePaused, currentSlideComplete, timerAnimationControls]);
+
+
+  // VARIANTS
+  const timerAnimationVariants = {
+    start: i => ({
+      pathLength: 1,
+      pathOffset: 0,
+      transition: {
+        duration: timeRemaining
+      }
+    }),
+
+    reset: {
+      pathLength: 1, 
+      pathOffset: 1
+    }
+  }
 
 
   return (
@@ -112,7 +174,9 @@ export default function AnnouncementBoards() {
       <button onClick={()=> { paginate(1) } }>Next slide</button>
       <button onClick={()=> { setSlidesArePaused(true); }}>Pause slide</button>
       <button onClick={()=> { setSlidesArePaused(false); }}>Start/Resume</button>
+      <button onClick={()=> { resetTimer(); }}>Reset timer</button>
       <span>{timeRemaining}</span>
+      <span>current slide is complete: { currentSlideComplete.toString() }</span>
 
 
 
@@ -126,19 +190,21 @@ export default function AnnouncementBoards() {
           <path
             d="M20 20 H788 V588 H20 z"
             fill="transparent"
-            stroke="green"
+            stroke="#f3f3f3"
             strokeWidth="6"
             strokeLinejoin="round"
             strokeLinecap="round"
           />
-          <path
-            d="M20 20 H788 V588 H20 z"
+          <motion.path
+            animate={ timerAnimationControls }
+            d="M20 20 V588 H788 V20 z"
             fill="transparent"
-            stroke="#f3f3f3"
+            stroke="#02b221"
             strokeWidth="6"
             strokeLinejoin="round"
-            strokeLinecap="square"
-            initial="blankStroke"
+            strokeLinecap="round"
+            initial={{ pathLength: 1, pathOffset: 1 }}
+            variants={ timerAnimationVariants }
           />
         </svg>
       </div>

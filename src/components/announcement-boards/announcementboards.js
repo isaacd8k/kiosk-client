@@ -92,7 +92,7 @@ export default function AnnouncementBoards() {
     // sequence animation
     // slide fade animation
     // THEN reset our timer state (i.e. isComplete & isPause)
-    resetTimer();
+    
     setSlidesArePaused(false);
   };
 
@@ -114,27 +114,37 @@ export default function AnnouncementBoards() {
 
       // bug problem! out of sync with timer!! because this func is async
       // maybe defer timer reset to "start" here instead of up there
+      
       timerAnimationControls.start("reset").then(() => {
+        setCurrentSlideComplete(false);
+        resetTimer();
+        setTimeRemaining(10);
+        // I think start is animating extremely quickly to completeion because of 
+        // stale timeRemaining state, i.e. at 0 (or maybe this function runs at the wrong time)
         timerAnimationControls.start("start");
       });
+
+      // cleanup function
     }
     
     else {
       // HAS BEEN UNPAUSED
       timerAnimationControls.start("start");
+      // cleanup function
     }
-
-    // IF unpausing from a currentSlideComplete pause,
-    // sequence an animation to:
-    // FIRST xxx.start("reset");
-    // AWAIT THEN xxx.start("start");
 
     console.log('CURRENTSLIDECOMPLETE: ', currentSlideComplete);
 
+      // research resetTimer() => should this be memoized?
+      // the animation stutters at every second because
+      // after every second, the hook is rerun and the value returned
+      // by it (the resetTimer function) is redefined. That triggers this 
+      // hook to rerender
   }, [slidesArePaused, currentSlideComplete, timerAnimationControls]);
 
 
   // VARIANTS
+  // function is called at the moment the variant is animated to
   const timerAnimationVariants = {
     start: i => ({
       pathLength: 1,
@@ -146,7 +156,10 @@ export default function AnnouncementBoards() {
 
     reset: {
       pathLength: 1, 
-      pathOffset: 1
+      pathOffset: 1,
+      transition: {
+        duration: 2
+      }
     }
   }
 

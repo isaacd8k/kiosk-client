@@ -14,7 +14,6 @@ export function useTimer({delay, onComplete, isPaused, tickUpdater}) {
 
   // always save updates to the callback
   useEffect(() => {
-    console.log('Inside hook: callback watcher useEffect()');
     savedCallback.current = onComplete;
   }, [onComplete]);
 
@@ -29,20 +28,17 @@ export function useTimer({delay, onComplete, isPaused, tickUpdater}) {
   // Set up the timeout function
   // timer-interval action
   useInterval(() => {
-    console.log('Inside hook: useInterval hook() callback');
     setTimeElapsed(timeElapsed + 1);    
   }, (isPaused || timeComplete) ? null : 1000);
 
 
   // timer-interval side effects
   useEffect(() => {
-    console.log('Inside hook: params watcher useEffect()');
     const timeRemaining = delay - timeElapsed;
     setTimeRemaining(timeRemaining);
 
     // call the updater function passed into the hook with fresh time remaining data
     if(tickUpdater) {
-      console.log('Called the timer-interval side effects function!', timeRemaining)
       tickUpdater(timeRemaining)
     }
   }, [timeElapsed, delay, tickUpdater]);
@@ -50,11 +46,9 @@ export function useTimer({delay, onComplete, isPaused, tickUpdater}) {
 
   // on timer complete actions
   useEffect(() => {
-    console.log('Inside hook: internal state timeRemaining watcher useEffect()');
     if (timeRemaining === 0) {
       setTimeComplete(true);
-      // other 'complete' actions
-
+      // other 'on complete' actions
       // call the callback
       savedCallback.current()
     };
@@ -62,9 +56,11 @@ export function useTimer({delay, onComplete, isPaused, tickUpdater}) {
 
   return {
     reset: () => { 
-      setTimeRemaining(delay);
-      setTimeComplete(false);
-      setTimeElapsed(0);
+      // updating timeElapsed triggers rerenders that
+      // recalculate and update timeRemaining automatically
+      setTimeElapsed(0); 
+
+      setTimeComplete(false); 
     }
   }
 }

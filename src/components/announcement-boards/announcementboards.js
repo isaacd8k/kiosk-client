@@ -4,6 +4,10 @@ import styles from "./announcementboards.module.scss";
 import { motion, AnimatePresence, useAnimation } from "framer-motion";
 import { wrap } from "@popmotion/popcorn";
 
+// test new animation structure
+import AnimationTest from "./components/animation-test";
+
+
 // custom hooks
 import { useTimer } from "./hooks";
 
@@ -63,7 +67,7 @@ export default function AnnouncementBoards() {
     setActiveSlideIndex(0);
 
     // 'play' the slides!
-    setSlidesArePaused(false);
+    setSlidesArePaused(true);
   }, [slides])
 
 
@@ -192,7 +196,14 @@ export default function AnnouncementBoards() {
       <span>current slide is complete: { currentSlideComplete.toString() }</span>
 
 
+      
+      <AnimationTest />
 
+
+
+      {/*  
+      
+      
       <div className={styles.svgContainer}>
         <svg
           viewBox="0 0 850 650" 
@@ -221,6 +232,9 @@ export default function AnnouncementBoards() {
           />
         </svg>
       </div>
+
+
+      */}
     </>
   )
 }
